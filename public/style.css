@@ -1,0 +1,19 @@
+body {
+  font-family: sans-serif;
+  text-align: center;
+  margin: 20px;
+}
+
+.choice {
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+  border: 1px solid #333;
+}
+
+.schelling {
+  background-color: gold;
+}
+.choice:hover {
+  background-color: #ddd;
+}

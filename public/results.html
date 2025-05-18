@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Test Results</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h2>Spatial Judgment Results</h2>
+  <canvas id="summaryChart" width="600" height="300"></canvas>
+
+    <script>
+      // Fetch results from the server
+      // This assumes you have a server endpoint that returns the results in JSON format
+      // For example, using Express.js: app.get('/results', (req, res) => { ... })
+    fetch('/results')
+      .then(res => res.json())
+      .then(allData => {
+        // Flatten all responses from all users
+        const responses = allData.flatMap(entry => entry.responses || []);
+
+        // Prepare data: confidence levels 1-5
+        const confLabels = ['1', '2', '3', '4', '5'];
+        // [correct+schelling, correct+not, incorrect+schelling, incorrect+not]
+        const correctSchelling = [0,0,0,0,0];
+        const correctNotSchelling = [0,0,0,0,0];
+        const wrongSchelling = [0,0,0,0,0];
+        const wrongNotSchelling = [0,0,0,0,0];
+
+        responses.forEach(r => {
+          const idx = (r.confidence || 1) - 1;
+          if (r.correct && r.isSchelling) correctSchelling[idx]++;
+          else if (r.correct && !r.isSchelling) correctNotSchelling[idx]++;
+          else if (!r.correct && r.isSchelling) wrongSchelling[idx]++;
+          else wrongNotSchelling[idx]++;
+        });
+
+        const ctx = document.getElementById('summaryChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: confLabels,
+            datasets: [
+              {
+                label: 'Correct & Schelling',
+                data: correctSchelling,
+                backgroundColor: '#4caf50'
+              },
+              {
+                label: 'Correct & Not Schelling',
+                data: correctNotSchelling,
+                backgroundColor: '#2196f3'
+              },
+              {
+                label: 'Incorrect & Schelling',
+                data: wrongSchelling,
+                backgroundColor: '#ffd700'
+              },
+              {
+                label: 'Incorrect & Not Schelling',
+                data: wrongNotSchelling,
+                backgroundColor: '#f44336'
+              }
+            ]
+          },
+          options: {
+            plugins: {
+              title: {
+                display: true,
+                text: 'Answers by Confidence, Schelling Point, and Correctness'
+              }
+            },
+            responsive: true,
+            scales: {
+              x: { stacked: true, title: { display: true, text: 'Confidence' } },
+              y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Count' } }
+            }
+          }
+        });
+      });
+    </script>
+</body>
+</html>
