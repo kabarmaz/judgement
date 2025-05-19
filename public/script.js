@@ -2,7 +2,7 @@ const directions = ['N', 'S', 'E', 'W', 'NE', 'NW', 'SE', 'SW'];
 const mapTypes = [
   'congruent', 'congruent', // 2 congruent
   'incongruent',            // 1 incongruent
-  'homogenous'              // 1 homogenous
+  'homogenous','homogenous' // 2 homogenous
 ];
 const randomizedConfigs = [];
 const results = [];
@@ -216,10 +216,36 @@ if (window.location.pathname.endsWith('results.html')) {
     });
   }
 
+  // Remove auto-start on window.onload, add Begin button
+  window.onload = () => {
+    const container = document.getElementById('mapContainer');
+    if (container) {
+      container.innerHTML = `<button id="beginBtn" style="font-size:1.5em;padding:15px 40px;margin:40px auto;display:block;">Begin</button>`;
+      document.getElementById('beginBtn').onclick = () => {
+        container.innerHTML = "<p>Test started</p>";
+        setTimeout(nextStep, 1000);
+      };
+    }
+    // Add "View Results" button
+    const resultsBtn = document.createElement('button');
+    resultsBtn.textContent = "View Results";
+    resultsBtn.style = "font-size:1em;padding:8px 20px;margin:20px auto;display:block;";
+    resultsBtn.onclick = () => {
+      const pw = prompt("Enter password to view results:");
+      if (pw === "turkey#1") {
+        window.location.href = "results.html";
+      } else {
+        alert("Incorrect password.");
+      }
+    };
+    document.body.appendChild(resultsBtn);
+  };
+
+  // Change nextStep to NOT auto-redirect to results
   function nextStep() {
     const container = document.getElementById('mapContainer');
     container.innerHTML = '';
-    document.getElementById('questionContainer').style.display = 'none';
+    document.getElementById('questionContainer') && (document.getElementById('questionContainer').style.display = 'none');
 
     if (currentIndex < randomizedConfigs.length) {
       const config = randomizedConfigs[currentIndex];
@@ -251,7 +277,11 @@ if (window.location.pathname.endsWith('results.html')) {
       }, 15000);
     } else {
       saveResults().then(() => {
-        window.location.href = "results.html";
+        // Do NOT redirect to results.html automatically
+        const container = document.getElementById('mapContainer');
+        if (container) {
+          container.innerHTML = `<h2>Test complete!</h2><p>Your answers have been saved.</p><p>Click "View Results" and enter the password to see the results.</p>`;
+        }
       });
     }
   }
@@ -318,12 +348,4 @@ if (window.location.pathname.endsWith('results.html')) {
       container.appendChild(btn);
     });
   }
-
-  window.onload = () => {
-    const container = document.getElementById('mapContainer');
-    if (container) {
-      container.innerHTML = "<p>Test started</p>";
-      setTimeout(nextStep, 1000);
-    }
-  };
 }
